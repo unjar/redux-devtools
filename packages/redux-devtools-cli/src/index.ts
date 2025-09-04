@@ -1,5 +1,7 @@
 import express from 'express';
 import http from 'http';
+import https from 'https';
+import fs from 'fs';
 import getPort from 'get-port';
 import socketClusterServer from 'socketcluster-server';
 import getOptions from './options.js';
@@ -37,7 +39,17 @@ export default async function (argv: { [arg: string]: any }): Promise<{
     console.log('[ReduxDevTools] Start server...');
     console.log('-'.repeat(80) + '\n');
   }
-  const httpServer = http.createServer();
+
+  let httpServer;
+  if (options.protocol === 'https') {
+      const httpsOptions = {
+        key: options.protocolOptions!.key!,
+        cert: options.protocolOptions!.cert!,
+    };
+    httpServer = https.createServer(httpsOptions);
+  } else {
+    httpServer = http.createServer();
+  }
   const agServer = socketClusterServer.attach(httpServer, options);
 
   const app = express();
